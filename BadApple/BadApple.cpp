@@ -12,7 +12,12 @@ static char desktop_path[MAX_PATH + 1];
 
 int main()
 {
-    POINT desktopResolution = GetDesktopIconResolution();
+    auto result = GetDesktopParams();
+    auto desktopResolution = result._Myfirst._Val;
+    auto folderView = result._Get_rest()._Myfirst._Val;
+    auto shellView = result._Get_rest()._Get_rest()._Myfirst._Val;
+
+
     SHGetSpecialFolderPathA(HWND_DESKTOP, desktop_path, CSIDL_DESKTOP, FALSE);
     
     const auto totalScreenCapacity = desktopResolution.x * desktopResolution.y;
@@ -36,17 +41,18 @@ int main()
     }
 
     auto desktopWindow = GetDesktopWindow();
-    RedrawWindow(desktopWindow, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-
-
-
     std::cout << "Wait until icons are fully drawn" << std::endl;
+    
+    shellView->Refresh();
 
     getchar();
 
     for (auto i = 0; i < desktopResolution.x; i++) {
         RenameFileByHandle(handles[i], whites[i]);
+        //SHChangeNotify(0x8000000, 0x1000, NULL, NULL);
     }
+    //RedrawWindow(desktopWindow, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+    
 
     return 0;
 }

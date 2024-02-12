@@ -13,6 +13,6 @@
 
 void FindDesktopFolderView(REFIID riid, void** ppv);
 
-POINT GetDesktopIconResolution();
+std::tuple<POINT, CComPtr<IFolderView2>, IShellView*> GetDesktopParams();
 
 void RenameFileByHandle(HANDLE handle, std::wstring newName);

@@ -1,4 +1,5 @@
 #include "diy_winapi.h"
+#include <tuple>
 
 // CCoInitialize incorporated by reference
 class CCoInitialize {
@@ -33,12 +34,20 @@ void FindDesktopFolderView(REFIID riid, void** ppv)
     spView->QueryInterface(riid, ppv);
 }
 
-POINT GetDesktopIconResolution() {
+std::tuple<POINT, CComPtr<IFolderView2>, IShellView*> GetDesktopParams() {
     CCoInitialize init;
     CComPtr<IFolderView2> spView;
     FindDesktopFolderView(IID_PPV_ARGS(&spView));
     CComPtr<IShellFolder> spFolder;
     spView->GetFolder(IID_PPV_ARGS(&spFolder));
+
+    CSFV csfv;
+    ZeroMemory(&csfv, sizeof(CSFV));
+    csfv.cbSize = sizeof(CSFV);
+    csfv.pshf = spFolder;
+
+    IShellView* pShellView;
+    SHCreateShellFolderViewEx(&csfv, &pShellView);
 
     CComPtr<IEnumIDList> spEnum;
     spView->Items(SVGIO_ALLVIEW, IID_PPV_ARGS(&spEnum));
@@ -66,7 +75,7 @@ POINT GetDesktopIconResolution() {
     point.x = xCount;
     point.y = yCount;
 
-    return point;
+    return std::make_tuple(point, spView, pShellView);
 }
 
 void RenameFileByHandle(HANDLE handle, std::wstring newName) {
