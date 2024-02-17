@@ -25,4 +25,7 @@
       <Filter>Файлы заголовков</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="framedata.bapl" />
+  </ItemGroup>
 </Project>
