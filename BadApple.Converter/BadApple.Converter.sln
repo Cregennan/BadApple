@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BadAppleWin32", "BadAppleWin32\BadAppleWin32.csproj", "{E3DE57EC-D507-45BE-8C94-4CADA610E237}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BadApple.Converter", "BadApple.Converter\BadApple.Converter.csproj", "{E3DE57EC-D507-45BE-8C94-4CADA610E237}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

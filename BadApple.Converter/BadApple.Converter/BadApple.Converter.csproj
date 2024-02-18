@@ -9,9 +9,6 @@
 
     <ItemGroup>
       <None Remove="downscaled.mp4" />
-      <Content Include="downscaled.mp4">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
     </ItemGroup>
 
     <ItemGroup>

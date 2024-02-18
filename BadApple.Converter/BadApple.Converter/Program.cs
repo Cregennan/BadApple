@@ -11,7 +11,7 @@ const byte BYTE_FRAME_SCREENSHOT = 1;
 
 var outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "framedata.bapl");
 using var outputStream = File.Open(outputPath, FileMode.Create, FileAccess.ReadWrite);
-using var videoReader = new VideoFrameReader(File.OpenRead("downscaled.mp4"));
+using var videoReader = new VideoFrameReader(File.OpenRead("downscaled-33x12.mp4"));
 var count = 100;
 
 var buffer = new Span<bool>(new bool[WIDTH * HEIGHT]);
