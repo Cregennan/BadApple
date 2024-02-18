@@ -3,13 +3,13 @@
 static const auto line_separator = L"\\";
 static const auto black_extension = L".baclrb";
 static const auto white_extension = L".baclrw";
-static const auto pixel_source_path = "C:\\badappleresources\\framedata.bapl";
-static const auto screenshot_path = std::wstring(L"C:\\Users\\Cregennan\\Pictures\\ba\\");
+static const auto pixel_source_path = "PATH_TO_BAPL_FILE";
+static const auto screenshot_path = std::wstring(L"YOUR_SCREENSHOT_FOLDER");
 static const char BYTE_ONE = 255;
 static const char BYTE_ZERO = 0;
 static const char BYTE_FRAME_PIXEL = 0;
 static const char BYTE_FRAME_SCREENSHOT = 1;
-static const auto DEFAULT_SLEEP_TIME = std::chrono::milliseconds(4000);
+static const auto DEFAULT_SLEEP_TIME = std::chrono::milliseconds(3000);
 
 
 static auto desktopWindow = GetDesktopWindow();
