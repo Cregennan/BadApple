@@ -1,0 +1,9 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.baclrb]
+[HKEY_CLASSES_ROOT\.baclrb\DefaultIcon]
+@="C:\\badappleresources\\badapple_black.ico"
+
+[HKEY_CLASSES_ROOT\.baclrw]
+[HKEY_CLASSES_ROOT\.baclrw\DefaultIcon]
+@="C:\\badappleresources\\badapple_white.ico"
