@@ -13,15 +13,17 @@ public:
 void FindDesktopFolderView(REFIID riid, void** ppv)
 {
     CComPtr<IShellWindows> spShellWindows;
-    auto _ = spShellWindows.CoCreateInstance(CLSID_ShellWindows);
+    // Создаем экземпляр IShellWindows
+    spShellWindows.CoCreateInstance(CLSID_ShellWindows); 
 
     CComVariant vtLoc(CSIDL_DESKTOP);
     CComVariant vtEmpty;
     long lhwnd;
     CComPtr<IDispatch> spdisp;
+    // Находим окно по его идентификатору SW (SW_DESKTOP в случае рабочего стола)
     spShellWindows->FindWindowSW(
         &vtLoc, &vtEmpty,
-        SWC_DESKTOP, &lhwnd, SWFO_NEEDDISPATCH, &spdisp);
+        SWC_DESKTOP, &lhwnd, SWFO_NEEDDISPATCH, &spdisp); 
 
     CComPtr<IShellBrowser> spBrowser;
     CComQIPtr<IServiceProvider>(spdisp)->
@@ -29,24 +31,20 @@ void FindDesktopFolderView(REFIID riid, void** ppv)
             IID_PPV_ARGS(&spBrowser));
 
     CComPtr<IShellView> spView;
-    spBrowser->QueryActiveShellView(&spView);
-
+    // Находим активный IShellView в выбранном окне
+    spBrowser->QueryActiveShellView(&spView); 
+    // Находим выбранный объект (в нашем случае IFolderView2) в IShellView
     spView->QueryInterface(riid, ppv);
 }
 
 POINT GetDesktopParams() {
     CCoInitialize init;
+    CoInitialize(NULL);
     CComPtr<IFolderView2> spView;
     FindDesktopFolderView(IID_PPV_ARGS(&spView));
+    
     CComPtr<IShellFolder> spFolder;
     spView->GetFolder(IID_PPV_ARGS(&spFolder));
-
-    IShellView* pShellView;
-    CSFV csfv;
-    ZeroMemory(&csfv, sizeof(csfv));
-    csfv.cbSize = sizeof(csfv);
-    csfv.pshf = spFolder;
-    auto desktopShellGetResult = SHCreateShellFolderViewEx(&csfv, &pShellView);
 
     CComPtr<IEnumIDList> spEnum;
     spView->Items(SVGIO_ALLVIEW, IID_PPV_ARGS(&spEnum));
@@ -55,18 +53,20 @@ POINT GetDesktopParams() {
     spView->SetRedraw(TRUE);
 
     const auto desiredSize = 67;
-    POINT spacing;
-    spView->GetSpacing(&spacing);
     FOLDERVIEWMODE viewMode;
     int iconSize;
     spView->GetViewModeAndIconSize(&viewMode, &iconSize);
     spView->SetViewModeAndIconSize(viewMode, desiredSize);
 
     RECT desktop;
+    // Получаем HANDLE окна рабочего стола
     HWND hDesktop = GetDesktopWindow();
+    // Получаем прямоугольник окна рабочего стола
     GetWindowRect(hDesktop, &desktop);
 
-
+    POINT spacing;
+    //Получаем ширину значка вместе с отступами
+    spView->GetSpacing(&spacing);
     auto xCount = desktop.right / spacing.x;
     auto yCount = desktop.bottom / spacing.y;
 
@@ -79,6 +79,7 @@ POINT GetDesktopParams() {
 
 void RenameFileByHandle(HANDLE handle, std::wstring newName) {
     auto newNameStr = newName.c_str();
+    // Создадим структуру с информацией о длине файла
     union
     {
         FILE_RENAME_INFO file_rename_info;
@@ -87,33 +88,36 @@ void RenameFileByHandle(HANDLE handle, std::wstring newName) {
 
     file_rename_info.ReplaceIfExists = TRUE;
     file_rename_info.RootDirectory = nullptr;
+    //Заполним информацию о длине названия файла
     file_rename_info.FileNameLength = (ULONG)wcslen(newNameStr) * sizeof(WCHAR);
+    // Запишем нули в название файла (для нормальной работы SetFileInformationByHandle название файла должно кончаться на \0)
     memset(file_rename_info.FileName, 0, MAX_PATH);
+    // Скопируем нужное название файла в память
     memcpy_s(file_rename_info.FileName, MAX_PATH * sizeof(WCHAR), newNameStr, file_rename_info.FileNameLength);
 
+    // Переименуем файл
     SetFileInformationByHandle(handle, FileRenameInfo, &buffer, sizeof buffer);
 }
 
-
 void SaveScreenshotToFile(const std::wstring& filename)
 {
-    // Get the device context of the screen
+    // Получим контекст устройства экрана
     HDC hScreenDC = CreateDC(L"DISPLAY", NULL, NULL, NULL);
 
-    // Get the size of the screen
+    // Получим размер экрана
     int ScreenWidth = GetDeviceCaps(hScreenDC, HORZRES);
     int ScreenHeight = GetDeviceCaps(hScreenDC, VERTRES);
 
-    // Create a bitmap
+    // Создадим изображение
     HDC hMemoryDC = CreateCompatibleDC(hScreenDC);
     HBITMAP hBitmap = CreateCompatibleBitmap(hScreenDC, ScreenWidth, ScreenHeight);
     HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemoryDC, hBitmap);
 
-    // Copy from the screen DC to the memory DC
+    // Скопируем скриншот из контекста экрана в контекст памяти (изображения)
     BitBlt(hMemoryDC, 0, 0, ScreenWidth, ScreenHeight, hScreenDC, 0, 0, SRCCOPY);
     hBitmap = (HBITMAP)SelectObject(hMemoryDC, hOldBitmap);
 
-    // Save the bitmap to a file
+    // Сохраним изображение в файл
     BITMAPFILEHEADER bmfHeader;
     BITMAPINFOHEADER bi;
 
@@ -134,22 +138,22 @@ void SaveScreenshotToFile(const std::wstring& filename)
     HANDLE hDIB = GlobalAlloc(GHND, dwBmpSize);
     char* lpbitmap = (char*)GlobalLock(hDIB);
 
-    // Gets the "bits" from the bitmap and copies them into a buffer 
+    // Скопируем биты изображения в буффер
     GetDIBits(hMemoryDC, hBitmap, 0, (UINT)ScreenHeight, lpbitmap, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
 
-    // A file is created, this is where we will save the screen capture.
+    // Создадим файл с будущим скриншотом
     HANDLE hFile = CreateFile(filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    // Add the size of the headers to the size of the bitmap to get the total file size
+    // Размер в байтах заголовка изображения
     DWORD dwSizeofDIB = dwBmpSize + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
-    //Offset to where the actual bitmap bits start.
+    // Сдвиг данных пикселей
     bmfHeader.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER);
 
-    //Size of the file
+    //Размер файла
     bmfHeader.bfSize = dwSizeofDIB;
 
-    //bfType must always be BM for Bitmaps
+    //0x4d42 = 'BM' в кодировке ASCII, обязательное значение
     bmfHeader.bfType = 0x4D42; //BM   
 
     DWORD dwBytesWritten = 0;
@@ -157,14 +161,14 @@ void SaveScreenshotToFile(const std::wstring& filename)
     WriteFile(hFile, (LPSTR)&bi, sizeof(BITMAPINFOHEADER), &dwBytesWritten, NULL);
     WriteFile(hFile, (LPSTR)lpbitmap, dwBmpSize, &dwBytesWritten, NULL);
 
-    //Unlock and Free the DIB from the heap
-                                                                           GlobalUnlock(hDIB);
+    //Очищаем данные контекстов
+    GlobalUnlock(hDIB);
     GlobalFree(hDIB);
 
-    //Close the handle for the file that was created
+    //Закрываем файлы
     CloseHandle(hFile);
 
-    //Clean up
+    //Очищаем мусор после себя
     DeleteObject(hBitmap);
     DeleteDC(hMemoryDC);
     DeleteDC(hScreenDC);

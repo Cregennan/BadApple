@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "thread": "cpp",
+        "string": "cpp",
+        "cmath": "cpp"
+    }
+}
